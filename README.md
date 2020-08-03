@@ -71,11 +71,12 @@ To restrict the number of results returned, pass the `:max_results` parameter to
 Artist.fulltext_search("vince vangogh", { :max_results => 5 })
 ```
 
-To return a pair of `[ result, score ]` instead of an array of results, pass the `:return_scores` parameter to `fulltext_search`:
+To return scores, pass the `:return_scores` parameter to `fulltext_search`:
 
 ``` ruby
 Artist.fulltext_search("vince vangogh", { :return_scores => true })
 ```
+The model will receive the search score in the attribute: `mongoid_fulltext_score`.
 
 The larger a score is, the better mongoid_fulltext thinks the match is. The scores have the following rough
 interpretation that you can use to make decisions about whether the match is good enough:
@@ -396,4 +397,8 @@ Copyright and License
 
 MIT License, see [LICENSE](LICENSE) for details.
 
+<<<<<<< HEAD
 (c) 2011-2017 [Artsy Inc.](http://artsy.github.io)
+=======
+(c) 2011-2015 [Artsy Inc.](http://artsy.github.io)
+>>>>>>> b3e2e8df744db36f08a003e6a6c0e80a0d78e435

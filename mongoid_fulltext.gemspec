@@ -4,7 +4,7 @@ require 'mongoid/full_text_search/version'
 Gem::Specification.new do |s|
   s.name = 'mongoid_fulltext'
   s.version = Mongoid::FullTextSearch::VERSION
-  s.authors = ['Aaron Windsor']
+  s.authors = ['Aaron Windsor', 'Don Vanboom']
   s.email = 'aaron.windsor@gmail.com'
   s.platform = Gem::Platform::RUBY
   s.required_rubygems_version = '>= 1.3.6'

@@ -11,10 +11,13 @@ require 'unicode_utils'
 require 'cgi'
 
 module Mongoid::FullTextSearch
+  require 'railtie' if defined?(Rails)
   extend ActiveSupport::Concern
 
   included do
     cattr_accessor :mongoid_fulltext_config
+    attr_accessor :mongoid_fulltext_score
+    Children.add self
   end
 
   class UnspecifiedIndexError < StandardError; end
@@ -78,6 +81,9 @@ module Mongoid::FullTextSearch
       db = collection.database
       coll = db[index_name]
 
+      # DVB -  ^--- this is the wrong way to access the collection Indexes
+      coll = collection
+      
       # The order of filters matters when the same index is used from two or more collections.
       filter_indexes = (config[:filters] || []).map do |key, _value|
         ["filter_values.#{key}", 1]
@@ -195,8 +201,15 @@ module Mongoid::FullTextSearch
     end
 
     def instantiate_mapreduce_results(results, options)
-      if options[:return_scores]
-        results.map { |result| [instantiate_mapreduce_result(result), result[:score]] }.find_all { |result| !result[0].nil? }
+      if (options[:return_scores])
+#        results.map { |result| [ instantiate_mapreduce_result(result), result[:score] ] }.find_all { |result| ! result[0].nil? }
+        q = results.map do |result|
+          if r = instantiate_mapreduce_result(result)
+            r.mongoid_fulltext_score = result[:score]
+          end
+          r
+        end
+        q.compact
       else
         results.map { |result| instantiate_mapreduce_result(result) }.compact
       end
@@ -204,6 +217,10 @@ module Mongoid::FullTextSearch
 
     def all_ngrams(str, config, bound_number_returned = true)
       return {} if str.nil?
+      if str.class == Array
+        ngram_array = str.uniq.collect{|a|{:ngram=>a, :score=>1}}.compact
+        return Hash[ngram_array.group_by{ |h| h[:ngram] }.map{ |key, values| [key, values.map{ |v| v[:score] }.sum] }]
+      end
 
       if config[:remove_accents]
         if defined?(UnicodeUtils)
@@ -368,6 +385,18 @@ module Mongoid::FullTextSearch
       else
         coll.find('document_id' => _id).remove_all
       end
+    end
+  end
+
+  module Children
+    extend self
+    @included_in ||= []
+
+    def add(klass)
+      @included_in << klass
+    end
+    def included_in
+      @included_in
     end
   end
 end
