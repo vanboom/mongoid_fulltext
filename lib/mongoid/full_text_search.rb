@@ -81,9 +81,6 @@ module Mongoid::FullTextSearch
       db = collection.database
       coll = db[index_name]
 
-      # DVB -  ^--- this is the wrong way to access the collection Indexes
-      coll = collection
-      
       # The order of filters matters when the same index is used from two or more collections.
       filter_indexes = (config[:filters] || []).map do |key, _value|
         ["filter_values.#{key}", 1]
